@@ -72,10 +72,14 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
     $header_info = explode('|', $col);
     $col_info = array();
 
+    // Allow passing complex headers,
+    // e.g. "Amount|type:int|length:11|not null:false"
+    // Which will translate to a column "amount" of type int(11) and NULL value
+    // is allowed.
     if (!empty($header_info[1])) {
-      foreach (explode(':', $col_info) as $schemas) {
+      foreach (explode('|', $col_info) as $schemas) {
         foreach ($schemas as $schema) {
-          foreach (explode('|', $schema) as $key => $value) {
+          foreach (explode(':', $schema) as $key => $value) {
             $col_info[$key] = $value;
           }
         }
