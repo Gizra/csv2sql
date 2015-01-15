@@ -1,19 +1,18 @@
 <?php
 
+
+$prefix = '_raw';
+
 // Get the CSV file name
-
-$prefix = '_skeleton';
-
 $arguments = drush_get_arguments();
-
 if (empty($arguments[2])) {
-  drush_print('No CSV path.');
+  drush_print('No CSV path given as an argument.');
   return;
 }
 
 $csv_path = $arguments[2];
 if (!file_exists($csv_path)) {
-  drush_print('File does not exist.');
+  drush_print('Given file does not exist.');
   return;
 }
 
@@ -44,11 +43,19 @@ if (($handle = fopen($csv_path, 'r')) !== FALSE) {
 }
 
 /**
- * @param $name
+ * Create a DB.
+ *
+ * @param $table_name
+ *   The table name.
  * @param array $header
+ *   Array with the column names and definition that was extracted from the CSV.
  * @param bool $drop_existing
+ *   Determines if an existing table should be dropped. Defaults to TRUE.
+ *
+ * @return array
+ *   Array with the column names.
  */
-function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
+function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE) {
   // Add a serial key as the first column.
   $fields_info = array(
     'id' => array(
@@ -96,7 +103,7 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
 
   if ($drop_existing) {
     // Drop existing table.
-    db_drop_table($name);
+    db_drop_table($table_name);
   }
 
   $table_schema = array(
@@ -104,7 +111,7 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
     'primary key' => array('id'),
   );
 
-  db_create_table($name, $table_schema);
+  db_create_table($table_name, $table_schema);
 
   $headers = array_keys($fields_info);
 
@@ -118,11 +125,11 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
 /**
  * Insert a single row to the table.
  *
- * @param $name
+ * @param $table_name
  * @param $row
  */
-function csv2sql_insert_row_to_table($name, $row) {
-  return db_insert($name)
+function csv2sql_insert_row_to_table($table_name, $row) {
+  return db_insert($table_name)
     ->fields($row)
     ->execute();
 }
