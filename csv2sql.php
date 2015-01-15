@@ -4,11 +4,26 @@
 
 $prefix = '_skeleton';
 
+$arguments = drush_get_arguments();
 
-function csv2sql_create_db($name) {
-  // Get info from the header of the CSV.
-  $header = array();
+if (empty($arguments[2])) {
+  drush_print('No CSV path.');
+  return;
+}
 
+$csv_path = $arguments[2];
+if (!file_exists($csv_path)) {
+  drush_print('File does not exist.');
+  return;
+}
+
+
+/**
+ * @param $name
+ * @param array $header
+ * @param bool $drop_existing
+ */
+function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
   // Add a serial key as the first column.
   $table_info = array(
     'id' => array(
@@ -19,9 +34,10 @@ function csv2sql_create_db($name) {
   );
 
   $first_col = TRUE;
+
+  // Get the column properties.
   foreach ($header as $col) {
     $header_info = explode('|', $col);
-
     $col_info = array();
 
     if (!empty($header_info[1])) {
@@ -52,10 +68,31 @@ function csv2sql_create_db($name) {
     $col_name = csv2sql_get_column_name($col_info[0]);
     $table_info[$col_name] = $col_info;
   }
+
+  if ($drop_existing) {
+    // Drop existing table.
+    db_drop_table($name);
+  }
+
+  return db_create_table($name, $table_info);
+}
+
+
+/**
+ * Insert a single row to the table.
+ *
+ * @param $name
+ * @param $row
+ */
+function csv2sql_insert_row_to_table($name, $row) {
+  return db_insert($name)
+    ->fields($row)
+    ->execute();
 }
 
 /**
  * Get the column name.
+ *
  * @param $col_name
  * @return string
  */
