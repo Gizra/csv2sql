@@ -17,6 +17,23 @@ if (!file_exists($csv_path)) {
   return;
 }
 
+$table_name = $prefix . '_' . basename($csv_path);
+
+$row = 1;
+if (($handle = fopen($csv_path, 'r')) !== FALSE) {
+  $first_row = TRUE;
+  while (($data = fgetcsv($handle, 0, ',')) !== FALSE) {
+    if ($first_row) {
+      $first_row = FALSE;
+
+      // Create the table.
+      csv2sql_create_db($table_name, $data);
+    }
+
+    // Insert rows.
+  }
+  fclose($handle);
+}
 
 /**
  * @param $name
@@ -65,7 +82,7 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
       $first_col = FALSE;
     }
 
-    $col_name = csv2sql_get_column_name($col_info[0]);
+    $col_name = csv2sql_get_column_name($header_info[0]);
     $table_info[$col_name] = $col_info;
   }
 
@@ -73,6 +90,8 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
     // Drop existing table.
     db_drop_table($name);
   }
+
+  drush_print_r($table_info);
 
   return db_create_table($name, $table_info);
 }
@@ -99,4 +118,5 @@ function csv2sql_insert_row_to_table($name, $row) {
 function csv2sql_get_column_name($col_name) {
   return trim(strtolower(str_replace(array('-', ' '), '_', $col_name)));
 }
+
 
