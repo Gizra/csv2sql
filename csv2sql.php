@@ -28,10 +28,17 @@ if (($handle = fopen($csv_path, 'r')) !== FALSE) {
       $first_row = FALSE;
 
       // Create the table.
-      csv2sql_create_db($table_name, $data);
+      $headers = csv2sql_create_db($table_name, $data);
+      continue;
     }
 
     // Insert rows.
+    $row = array();
+    foreach ($data as $delta => $value) {
+      $header_col = $headers[$delta];
+      $row[$header_col] = $value;
+    }
+    csv2sql_insert_row_to_table($table_name, $row);
   }
   fclose($handle);
 }
@@ -97,7 +104,14 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
     'primary key' => array('id'),
   );
 
-  return db_create_table($name, $table_schema);
+  db_create_table($name, $table_schema);
+
+  $headers = array_keys($fields_info);
+
+  // Remove the ID key.
+  unset($headers[0]);
+
+  return array_values($headers);
 }
 
 
