@@ -17,7 +17,8 @@ if (!file_exists($csv_path)) {
   return;
 }
 
-$table_name = $prefix . '_' . basename($csv_path);
+$path_info = pathinfo($csv_path);
+$table_name = $prefix . '_' . $path_info['filename'];
 
 $row = 1;
 if (($handle = fopen($csv_path, 'r')) !== FALSE) {
@@ -42,7 +43,7 @@ if (($handle = fopen($csv_path, 'r')) !== FALSE) {
  */
 function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
   // Add a serial key as the first column.
-  $table_info = array(
+  $fields_info = array(
     'id' => array(
       'type' => 'serial',
       'not null' => TRUE,
@@ -83,7 +84,7 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
     }
 
     $col_name = csv2sql_get_column_name($header_info[0]);
-    $table_info[$col_name] = $col_info;
+    $fields_info[$col_name] = $col_info;
   }
 
   if ($drop_existing) {
@@ -91,9 +92,12 @@ function csv2sql_create_db($name, $header = array(), $drop_existing = TRUE) {
     db_drop_table($name);
   }
 
-  drush_print_r($table_info);
+  $table_schema = array(
+    'fields' => $fields_info,
+    'primary key' => array('id'),
+  );
 
-  return db_create_table($name, $table_info);
+  return db_create_table($name, $table_schema);
 }
 
 
