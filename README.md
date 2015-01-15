@@ -13,5 +13,5 @@ override it by setting the header in the CSV file.
 * The first column is treated as the primary column
 * In the SQL a serial ``id`` column is created
 
-Unique ID | Amount|description;The amount of the field|not null;false | User
---------- | --------------------------------------------------------- | -----
+| Unique ID | Amount|description;The amount of the field|not null;false | User |
+| --------- | --------------------------------------------------------- | ---- |
