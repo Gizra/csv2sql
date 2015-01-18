@@ -15,9 +15,9 @@ override it by setting the header in the CSV file.
 * The first column is treated as the primary column
 * In the SQL a serial ``id`` column is created
 
-| Unique ID | Amount&#124;type:int&#124;length:11&#124;not null:false | User  |
-| --------- | --------------------------------------------------------| ----- |
-| title1    | 3000                                                    | user1 |
+| Unique ID | Amount&#124;type:int&#124;length:11&#124;default:0| User  |
+| --------- | --------------------------------------------------| ----- |
+| title1    | 3000                                              | user1 |
 
 The complex column will be translated in the DB to an ``amount`` column type
 ``int(11)`` where ``NULL`` value is allowed.
