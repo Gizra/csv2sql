@@ -117,19 +117,15 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
     }
 
 
-    // Add default values.
-    $col_info += array(
-      'description' => '',
-      'type' => 'varchar',
-      'length' => 255,
-      'not null' => TRUE,
-      'default' => '',
-    );
-
-    if ($first_col) {
-      // Set as primary key.
-      $col_info += array();
-      $first_col = FALSE;
+    if (empty($col_info)) {
+      // Add default values.
+      $col_info = array(
+        'description' => '',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      );
     }
 
     $col_name = csv2sql_get_column_name($header_info[0]);
