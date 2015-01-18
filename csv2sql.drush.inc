@@ -103,14 +103,16 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
     // Which will translate to a column "amount" of type int(11) and NULL value
     // is allowed.
     if (!empty($header_info[1])) {
-      foreach (explode('|', $col_info) as $schemas) {
-        foreach ($schemas as $schema) {
-          foreach (explode(':', $schema) as $key => $value) {
-            $col_info[$key] = $value;
-          }
-        }
+      $properties = $header_info;
+      // Remove the column name.
+      unset($properties[0]);
+
+      foreach ($properties as $property) {
+        list($key, $value) = explode(':', $property);
+        $col_info[$key] = $value;
       }
     }
+
 
     // Add default values.
     $col_info += array(
