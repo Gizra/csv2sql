@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Convert CSV to SQL and import to the Drupal instance.
+ */
+
 
 /**
  * Implements hook_drush_command().
@@ -8,8 +13,7 @@ function csv2sql_drush_command() {
   $items = array();
 
   $items['csv2sql'] = array(
-    'description' => 'Export CSV to SQL an import to the Drupal instance.',
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'description' => 'Convert CSV to SQL and import to the Drupal instance.',
     'examples' => array(
       'drush csv2sql /path/to/someFile.csv' => 'Converts the someFile.csv to an SQL table.',
     ),
