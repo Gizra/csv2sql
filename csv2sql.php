@@ -1,45 +1,67 @@
 <?php
 
 
-$prefix = '_raw';
+/**
+ * Implements hook_drush_command().
+ */
+function csv2sql_drush_command() {
+  $items = array();
 
-// Get the CSV file name
-$arguments = drush_get_arguments();
-if (empty($arguments[2])) {
-  drush_print('No CSV path given as an argument.');
-  return;
+  $items['csv2sql'] = array(
+    'description' => 'Export CSV to SQL an import to the Drupal instance.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'examples' => array(
+      'drush csv2sql /path/to/someFile.csv' => 'Converts the someFile.csv to an SQL table.',
+    ),
+    'arguments' => array(
+      'path' => 'The path to the CSV file.',
+    ),
+    'required-arguments' => TRUE,
+    'options' => array(
+      'prefix' => 'the prefix of the table. Defaults to "_raw".'
+    ),
+  );
+
+  return $items;
 }
 
-$csv_path = $arguments[2];
-if (!file_exists($csv_path)) {
-  drush_print('Given file does not exist.');
-  return;
-}
+/**
+ * Implements drush_hook_command().
+ *
+ * Command callback for csv2sql.
+ */
+function drush_csv2sql($csv_path) {
+  $prefix = drush_get_option('prefix', '_raw');
 
-$path_info = pathinfo($csv_path);
-$table_name = $prefix . '_' . $path_info['filename'];
-
-$row = 1;
-if (($handle = fopen($csv_path, 'r')) !== FALSE) {
-  $first_row = TRUE;
-  while (($data = fgetcsv($handle, 0, ',')) !== FALSE) {
-    if ($first_row) {
-      $first_row = FALSE;
-
-      // Create the table.
-      $headers = csv2sql_create_db($table_name, $data);
-      continue;
-    }
-
-    // Insert rows.
-    $row = array();
-    foreach ($data as $delta => $value) {
-      $header_col = $headers[$delta];
-      $row[$header_col] = $value;
-    }
-    csv2sql_insert_row_to_table($table_name, $row);
+  if (!file_exists($csv_path)) {
+    drush_print('Given file does not exist.');
+    return;
   }
-  fclose($handle);
+
+  $path_info = pathinfo($csv_path);
+  $table_name = $prefix . '_' . $path_info['filename'];
+
+  if (($handle = fopen($csv_path, 'r')) !== FALSE) {
+    $first_row = TRUE;
+    while (($data = fgetcsv($handle, 0, ',')) !== FALSE) {
+      if ($first_row) {
+        $first_row = FALSE;
+
+        // Create the table.
+        $headers = csv2sql_create_db($table_name, $data);
+        continue;
+      }
+
+      // Insert rows.
+      $row = array();
+      foreach ($data as $delta => $value) {
+        $header_col = $headers[$delta];
+        $row[$header_col] = $value;
+      }
+      csv2sql_insert_row_to_table($table_name, $row);
+    }
+    fclose($handle);
+  }
 }
 
 /**
@@ -86,8 +108,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
       }
     }
 
-
-    // Add default values;
+    // Add default values.
     $col_info += array(
       'description' => '',
       'type' => 'varchar',
@@ -131,7 +152,12 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
  * Insert a single row to the table.
  *
  * @param $table_name
+ *   The table name.
  * @param $row
+ *   The row to insert.
+ *
+ * @return bool
+ *   TRUE if the insert operation was successful.
  */
 function csv2sql_insert_row_to_table($table_name, $row) {
   return db_insert($table_name)
@@ -140,10 +166,13 @@ function csv2sql_insert_row_to_table($table_name, $row) {
 }
 
 /**
- * Get the column name.
+ * Get a machine readable name fromthe column name.
  *
  * @param $col_name
+ *   The column name.
+ *
  * @return string
+ *   The trimmed, lower-cased and underscored name of the column.
  */
 function csv2sql_get_column_name($col_name) {
   return trim(strtolower(str_replace(array('-', ' '), '_', $col_name)));
