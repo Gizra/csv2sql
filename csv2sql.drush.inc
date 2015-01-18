@@ -42,8 +42,11 @@ function drush_csv2sql($csv_path) {
     return;
   }
 
+
   $path_info = pathinfo($csv_path);
   $table_name = $prefix . '_' . $path_info['filename'];
+
+  drush_print(format_string('Starting to convert file "@file" to table "@table".', array('@file' => $path_info['filename'], '@table' => $table_name)));
 
   if (($handle = fopen($csv_path, 'r')) !== FALSE) {
     $first_row = TRUE;
@@ -181,7 +184,21 @@ function csv2sql_insert_row_to_table($table_name, $row) {
  *   The trimmed, lower-cased and underscored name of the column.
  */
 function csv2sql_get_column_name($col_name) {
-  return trim(strtolower(str_replace(array('-', ' '), '_', $col_name)));
+  if (module_exists('ctools')) {
+    // Use CTools.
+    ctools_include('cleanstring');
+    $settings = array(
+      'separator' => '_',
+      'max length' => 255,
+      'lower case' => TRUE,
+    );
+    return ctools_cleanstring($col_name, $settings);
+  }
+
+  $pattern = '/[^a-zA-Z0-9\/]+/';
+  $col_name = preg_replace($pattern, '_', $col_name);
+
+  return trim(strtolower(str_replace(array('-', ' ', '/'), '_', $col_name)));
 }
 
 
