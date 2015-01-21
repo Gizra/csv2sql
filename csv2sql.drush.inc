@@ -96,15 +96,27 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   $first_col = TRUE;
 
+  // The default index for each table.
+  $index_columns = array('id');
+
   // Get the column properties.
   foreach ($header as $col) {
     $header_info = explode('|', $col);
     $col_info = array();
+    $col_name = csv2sql_get_column_name($header_info[0]);
+
+    // Add the first column to index.
+    if ($first_col && !in_array('index:false', array_map('strtolower', $header_info))) {
+      $index_columns[] = $col_name;
+    }
 
     // Allow passing complex headers,
     // e.g. "Amount|type:int|length:11|not null:false"
     // Which will translate to a column "amount" of type int(11) and NULL value
     // is allowed.
+    // Index the first column in the table as a default,
+    // unless stated otherwise in the column header (index:FALSE),
+    // Add other columns to index if stated in the header (index:TRUE).
     if (!empty($header_info[1])) {
       $properties = $header_info;
       // Remove the column name.
@@ -112,7 +124,18 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
       foreach ($properties as $property) {
         list($key, $value) = explode(':', $property);
-        $col_info[$key] = $value;
+        // Check which columns needs to be added to index.
+        // Index can't go into the field properties (It's added to table's properties).
+        if (strtolower($key) == 'index') {
+          // Add to index only if index is set to TRUE and it's not the first column.
+          if (strtoupper($value) == 'TRUE' && !$first_col) {
+            // Add the column to the table index.
+            $index_columns[] = $col_name;
+          }
+        }
+        else {
+          $col_info[$key] = $value;
+        }
       }
     }
 
@@ -128,8 +151,8 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
       );
     }
 
-    $col_name = csv2sql_get_column_name($header_info[0]);
     $fields_info[$col_name] = $col_info;
+    $first_col = FALSE;
   }
 
   if ($drop_existing) {
@@ -139,7 +162,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   $table_schema = array(
     'fields' => $fields_info,
-    'primary key' => array('id'),
+    'primary key' => $index_columns,
   );
 
   db_create_table($table_name, $table_schema);
