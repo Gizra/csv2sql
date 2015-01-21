@@ -13,11 +13,12 @@ under.
 * Each column is created as ``varchar 255`` by default. However it is possible to
 override it by setting the header in the CSV file.
 * The first column is treated as the primary column
+* Each column which has ``index:TRUE`` in the header, will be added to the table index, This will make for a faster migration if you need to use the ``unique ID`` for entity-reference.
 * In the SQL a serial ``id`` column is created
 
-| Unique ID | Amount&#124;type:int&#124;length:11&#124;default:0| Body&#124;type:text&#124;size:big | User  |
-| --------- | --------------------------------------------------| ----------------------------------| ----- |
-| title1    | 3000                                              | Some long text, that might even have line breaks. | user1 |
+| Unique ID&#124;index:TRUE | Amount&#124;type:int&#124;length:11&#124;default:0| Body&#124;type:text&#124;size:big | User  |
+| -------------- | --------------------------------------------------| ----------------------------------| ----- |
+| title1         | 3000 | Some long text, that might even have line breaks. | user1 |
 
 The complex column will be translated in the DB to an ``amount`` column type
 ``int(11)`` where ``NULL`` value is allowed.
