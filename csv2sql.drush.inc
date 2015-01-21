@@ -96,15 +96,20 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   $first_col = TRUE;
 
+  // The default index for each table.
+  $index_columns = array('id');
+
   // Get the column properties.
   foreach ($header as $col) {
     $header_info = explode('|', $col);
     $col_info = array();
+    $col_name = csv2sql_get_column_name($header_info[0]);
 
     // Allow passing complex headers,
     // e.g. "Amount|type:int|length:11|not null:false"
     // Which will translate to a column "amount" of type int(11) and NULL value
     // is allowed.
+    // Table indexing is also passed in the headers.
     if (!empty($header_info[1])) {
       $properties = $header_info;
       // Remove the column name.
@@ -112,7 +117,14 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
       foreach ($properties as $property) {
         list($key, $value) = explode(':', $property);
-        $col_info[$key] = $value;
+        // Check which columns needs to be added to index.
+        if (strtolower($key) == 'index' && strtoupper($value) == 'TRUE') {
+          // Add the column to the table index.
+          $index_columns[] = $col_name;
+        }
+        else {
+          $col_info[$key] = $value;
+        }
       }
     }
 
@@ -128,7 +140,6 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
       );
     }
 
-    $col_name = csv2sql_get_column_name($header_info[0]);
     $fields_info[$col_name] = $col_info;
   }
 
@@ -139,7 +150,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   $table_schema = array(
     'fields' => $fields_info,
-    'primary key' => array('id'),
+    'primary key' => $index_columns,
   );
 
   db_create_table($table_name, $table_schema);
