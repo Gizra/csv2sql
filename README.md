@@ -15,7 +15,7 @@ override it by setting the header in the CSV file.
 * The first column is treated as the primary column
 * In the SQL a serial ``id`` column is created
 * Index can be added to any column by adding ``index:TRUE`` to the column's header,
- The first column of each table is added to the index by default unless stated otherwise (``index:FALSE``) in the header
+ The first column of each table is added to the index by default unless stated otherwise (``index:FALSE``) in the header,
  This will make for a faster migration if you need to use any column as key for referencing other entities.
 
 | Unique ID&#124;index:FALSE | Amount&#124;type:int&#124;length:11&#124;default:0| Body&#124;type:text&#124;size:big | User&#124;index:TRUE  |
