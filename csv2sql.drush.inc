@@ -97,7 +97,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
   $first_col = TRUE;
 
   // The default index for each table.
-  $index_columns = array('_id');
+  $index_columns = array('__id');
 
   // Get the column properties.
   foreach ($header as $col) {
