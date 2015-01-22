@@ -87,7 +87,7 @@ function drush_csv2sql($csv_path) {
 function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE) {
   // Add a serial key as the first column.
   $fields_info = array(
-    'id' => array(
+    '__id' => array(
       'type' => 'serial',
       'not null' => TRUE,
       'description' => 'Primary Key: Numeric ID.',
@@ -97,7 +97,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
   $first_col = TRUE;
 
   // The default index for each table.
-  $index_columns = array('id');
+  $index_columns = array('__id');
 
   // Get the column properties.
   foreach ($header as $col) {
@@ -194,7 +194,10 @@ function csv2sql_insert_row_to_table($table_name, $row) {
 }
 
 /**
- * Get a machine readable name fromthe column name.
+ * Get a machine readable name from the column name.
+ *
+ * In order to prevent having MYSQL reserved words, we prefix all the columns
+ * with an underscore.
  *
  * @param $col_name
  *   The column name.
@@ -211,13 +214,13 @@ function csv2sql_get_column_name($col_name) {
       'max length' => 255,
       'lower case' => TRUE,
     );
-    return ctools_cleanstring($col_name, $settings);
+    return '_' . ctools_cleanstring($col_name, $settings);
   }
 
   $pattern = '/[^a-zA-Z0-9\/]+/';
   $col_name = preg_replace($pattern, '_', $col_name);
 
-  return trim(strtolower(str_replace(array('-', ' ', '/'), '_', $col_name)));
+  return '_' . trim(strtolower(str_replace(array('-', ' ', '/'), '_', $col_name)));
 }
 
 
