@@ -87,7 +87,7 @@ function drush_csv2sql($csv_path) {
 function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE) {
   // Add a serial key as the first column.
   $fields_info = array(
-    'id' => array(
+    '_id' => array(
       'type' => 'serial',
       'not null' => TRUE,
       'description' => 'Primary Key: Numeric ID.',
@@ -97,7 +97,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
   $first_col = TRUE;
 
   // The default index for each table.
-  $index_columns = array('id');
+  $index_columns = array('_id');
 
   // Get the column properties.
   foreach ($header as $col) {
