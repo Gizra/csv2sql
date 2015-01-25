@@ -30,3 +30,15 @@ The complex column will be translated in the DB to an ``amount`` column type
 
 The values that can be passed in the header are the ones that are expected by
 ``db_create_table()``
+
+## Dump SQL and import
+
+In order to deploy a local copy to a remote server you may need to export the SQL tables, and later import them. Here's a handy bash command to do it - it exports all the tables prefixed with ``_raw_`` into the ``raws.sql`` file. The second comamnd simply imports that SQL file to the remote server.
+
+```bash
+# Export SQL tables into a file.
+drush sqlq "SHOW TABLES LIKE '_raw_%';" | awk -v ORS=, '{ print $1 }' | sed 's/,$//' | sed 's/^Tables_in_[^,]*,//' | drush sql-dump > raws.sql
+
+# Replace teh drush alias with your own.
+`drush @remote-alias sql-connect` < raws.sql
+```
