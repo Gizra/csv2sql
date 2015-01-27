@@ -38,10 +38,10 @@ function csv2sql_drush_command() {
 function drush_csv2sql($csv_path) {
   $prefix = drush_get_option('prefix', '_raw');
 
-  $limit = drush_get_option('limit', FALSE);
+  $limit = intval(drush_get_option('limit', FALSE));
 
-  if ($limit && !is_numeric($limit)) {
-    drush_print('Limit should be a number.');
+  if ($limit && !is_int($limit)) {
+    drush_print('Limit should be an integer.');
     return;
   }
 
