@@ -23,7 +23,7 @@ function csv2sql_drush_command() {
     'required-arguments' => TRUE,
     'options' => array(
       'prefix' => 'the prefix of the table. Defaults to "_raw".',
-      'limit' => 'the number of raws to convert into the SQL table. Defaults to unlimited.',
+      'limit' => 'the number of rows to convert into the SQL table. Defaults to unlimited.',
     ),
   );
 
@@ -57,9 +57,9 @@ function drush_csv2sql($csv_path) {
   drush_print(format_string('Starting to convert file "@file" to table "@table".', array('@file' => $path_info['filename'], '@table' => $table_name)));
 
   if (($handle = fopen($csv_path, 'r')) !== FALSE) {
-    $raw_number = 0;
+    $row_number = 0;
     $first_row = TRUE;
-    while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $raw_number)) {
+    while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
       if ($first_row) {
         $first_row = FALSE;
 
@@ -75,7 +75,7 @@ function drush_csv2sql($csv_path) {
         $row[$header_col] = $value;
       }
       csv2sql_insert_row_to_table($table_name, $row);
-      $raw_number++;
+      $row_number++;
     }
     fclose($handle);
   }
