@@ -40,6 +40,11 @@ function drush_csv2sql($csv_path) {
 
   $limit = drush_get_option('limit', FALSE);
 
+  if ($limit && !is_numeric($limit)) {
+    drush_print('Limit should be a number.');
+    return;
+  }
+
   if (!file_exists($csv_path)) {
     drush_print('Given file does not exist.');
     return;
@@ -52,9 +57,9 @@ function drush_csv2sql($csv_path) {
   drush_print(format_string('Starting to convert file "@file" to table "@table".', array('@file' => $path_info['filename'], '@table' => $table_name)));
 
   if (($handle = fopen($csv_path, 'r')) !== FALSE) {
-    $convert_count = 0;
+    $raw_number = 0;
     $first_row = TRUE;
-    while ( (($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $convert_count) ) {
+    while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $raw_number)) {
       if ($first_row) {
         $first_row = FALSE;
 
@@ -70,7 +75,7 @@ function drush_csv2sql($csv_path) {
         $row[$header_col] = $value;
       }
       csv2sql_insert_row_to_table($table_name, $row);
-      $convert_count++;
+      $raw_number++;
     }
     fclose($handle);
   }
