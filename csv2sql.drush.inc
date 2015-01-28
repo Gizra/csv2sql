@@ -20,10 +20,11 @@ function csv2sql_drush_command() {
     'arguments' => array(
       'path' => 'The path to the CSV file.',
     ),
-    'required-arguments' => TRUE,
+    'required-arguments' => FALSE,
     'options' => array(
       'prefix' => 'the prefix of the table. Defaults to "_raw".',
       'limit' => 'the number of rows to convert into the SQL table. Defaults to unlimited.',
+      'dir' => 'the directory to scan for csv files.',
     ),
   );
 
@@ -35,7 +36,7 @@ function csv2sql_drush_command() {
  *
  * Command callback for csv2sql.
  */
-function drush_csv2sql($csv_path) {
+function drush_csv2sql($csv_path = '') {
   $prefix = drush_get_option('prefix', '_raw');
 
   $limit = intval(drush_get_option('limit', FALSE));
@@ -44,6 +45,12 @@ function drush_csv2sql($csv_path) {
     drush_print('Limit should be an integer.');
     return;
   }
+
+  $dir = drush_get_option('dir');
+
+  $scan = scandir($dir);
+
+  var_dump($scan);
 
   if (!file_exists($csv_path)) {
     drush_print('Given file does not exist.');
