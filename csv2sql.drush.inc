@@ -46,45 +46,46 @@ function drush_csv2sql($csv_path = '') {
     return;
   }
 
-  $dir = drush_get_option('dir');
+  $files = $csv_path ? array($csv_path) : array();
+  if ($dir = drush_get_option('dir')) {
+    //@TODO:  Path is still a bit hardcoded, needs another approach.
+    $files = glob($dir . '/*/*.csv');
+  }
 
-  $scan = scandir($dir);
-
-  var_dump($scan);
-
-  if (!file_exists($csv_path)) {
+  if (!file_exists($csv_path) && empty($files)) {
     drush_print('Given file does not exist.');
     return;
   }
 
+  foreach ($files as $csv_file) {
+    $path_info = pathinfo($csv_file);
+    $table_name = $prefix . '_' . $path_info['filename'];
 
-  $path_info = pathinfo($csv_path);
-  $table_name = $prefix . '_' . $path_info['filename'];
+    drush_print(format_string('Starting to convert file "@file" to table "@table".', array('@file' => $path_info['filename'], '@table' => $table_name)));
 
-  drush_print(format_string('Starting to convert file "@file" to table "@table".', array('@file' => $path_info['filename'], '@table' => $table_name)));
+    if (($handle = fopen($csv_file, 'r')) !== FALSE) {
+      $row_number = 0;
+      $first_row = TRUE;
+      while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
+        if ($first_row) {
+          $first_row = FALSE;
 
-  if (($handle = fopen($csv_path, 'r')) !== FALSE) {
-    $row_number = 0;
-    $first_row = TRUE;
-    while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
-      if ($first_row) {
-        $first_row = FALSE;
+          // Create the table.
+          $headers = csv2sql_create_db($table_name, $data);
+          continue;
+        }
 
-        // Create the table.
-        $headers = csv2sql_create_db($table_name, $data);
-        continue;
+        // Insert rows.
+        $row = array();
+        foreach ($data as $delta => $value) {
+          $header_col = $headers[$delta];
+          $row[$header_col] = $value;
+        }
+        csv2sql_insert_row_to_table($table_name, $row);
+        $row_number++;
       }
-
-      // Insert rows.
-      $row = array();
-      foreach ($data as $delta => $value) {
-        $header_col = $headers[$delta];
-        $row[$header_col] = $value;
-      }
-      csv2sql_insert_row_to_table($table_name, $row);
-      $row_number++;
+      fclose($handle);
     }
-    fclose($handle);
   }
 }
 
