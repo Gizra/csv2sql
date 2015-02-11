@@ -48,8 +48,8 @@ function drush_csv2sql($csv_path = '') {
 
   $files = $csv_path ? array($csv_path) : array();
   if ($dir = drush_get_option('dir')) {
-    //@TODO:  Path is still a bit hardcoded, needs another approach.
-    $files = glob($dir . '/*/*.csv');
+    $files = scan_directory($dir);
+    variable_set('csv_files', array());
   }
 
   if (!file_exists($csv_path) && empty($files)) {
@@ -239,6 +239,29 @@ function csv2sql_get_column_name($col_name) {
   $col_name = preg_replace($pattern, '_', $col_name);
 
   return '_' . trim(strtolower(str_replace(array('-', ' ', '/'), '_', $col_name)));
+}
+
+/**
+ * TODO: Add docs.
+ * @param $dir
+ * @param $csv_files
+ * @return array
+ */
+function scan_directory($dir) {
+  $csv_files = variable_get('csv_files') ? variable_get('csv_files') : array();
+  $items_in_dir = glob($dir . DIRECTORY_SEPARATOR . '*');
+
+  foreach ($items_in_dir as $item) {
+    if (pathinfo($item, PATHINFO_EXTENSION) == 'csv') {
+      $csv_files[] = $item;
+      variable_set('csv_files', $csv_files);
+    }
+    if(is_dir($item)) {
+      scan_directory($item, $csv_files);
+    }
+  }
+
+  return variable_get('csv_files');
 }
 
 
