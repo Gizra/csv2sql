@@ -272,11 +272,13 @@ function scan_directory($dir, $files) {
   $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
 
   foreach ($items_in_dir as $item) {
+    // If current item is a 'csv' file, Add to the global variable.
     if (pathinfo($item, PATHINFO_EXTENSION) == 'csv') {
       $csv_files[] = $item;
       variable_set('csv_files', $csv_files);
     }
-    if(is_dir($item)) {
+    // If current item is a directory, Scan again.
+    if (is_dir($item)) {
       scan_directory($item, $csv_files);
     }
   }
