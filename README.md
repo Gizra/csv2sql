@@ -42,3 +42,12 @@ drush sqlq "SHOW TABLES LIKE '_raw_%';" | awk -v ORS=, '{ print $1 }' | sed 's/,
 # Replace teh drush alias with your own.
 `drush @remote-alias sql-connect` < raws.sql
 ```
+
+# Scan a directory.
+
+There's an option to scan a whole directory instead of giving an exact path to a ``csv`` file.
+Execute the command: ``drush scr csv2sql.php --dir=/PATH/TO/directory``
+
+Also there's an option to scan a directory and add a direct path to a file together.
+Execute the command: ``drush scr csv2sql.php /PATH/TO/file.csv --dir=/PATH/TO/directory``
+

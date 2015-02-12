@@ -46,9 +46,11 @@ function drush_csv2sql($csv_path = '') {
     return;
   }
 
+  // Check if the command has a file direct path.
   $files = $csv_path ? array($csv_path) : array();
+  // Check if the command has a directory path to scan.
   if ($dir = drush_get_option('dir')) {
-    $files = scan_directory($dir);
+    $files = scan_directory($dir, $files);
     variable_set('csv_files', array());
   }
 
@@ -242,14 +244,32 @@ function csv2sql_get_column_name($col_name) {
 }
 
 /**
- * TODO: Add docs.
+ * Scans the directory given by the user in the command,
+ * Scans the sub-directories as well,
+ * Searches for files with 'csv' extension to be added to the convert process.
+ *
  * @param $dir
- * @param $csv_files
+ *  The path of the directory provided in the command.
+ *
+ * @param $files
+ *  An array containing a name of file if the user added
+ *  a file path in addition to the directory path.
+ *
  * @return array
+ *  An array of 'csv' files found in the directory.
  */
-function scan_directory($dir) {
-  $csv_files = variable_get('csv_files') ? variable_get('csv_files') : array();
-  $items_in_dir = glob($dir . DIRECTORY_SEPARATOR . '*');
+function scan_directory($dir, $files) {
+  // If the directory does not exist, print a message, stop the function
+  // and return the file path we got from the command line (If there's any).
+  if (!file_exists($dir)) {
+    drush_print('Given directory does not exist.');
+    return $files;
+  }
+  // Save the array of files in a global variable.
+  $csv_files = variable_get('csv_files') ? variable_get('csv_files') : $files;
+  // Add a trailing slash and a * so the glob returns everything in the directory,
+  // Trim trailing slash and add them here, To make sure we never have '//'.
+  $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
 
   foreach ($items_in_dir as $item) {
     if (pathinfo($item, PATHINFO_EXTENSION) == 'csv') {
