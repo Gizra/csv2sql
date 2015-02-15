@@ -46,6 +46,6 @@ drush sqlq "SHOW TABLES LIKE '_raw_%';" | awk -v ORS=, '{ print $1 }' | sed 's/,
 # Scan a directory.
 
 There's an option to scan a whole directory instead of giving an exact path to a ``csv`` file.
-Execute the command: ``drush scr csv2sql.php --dir=/PATH/TO/directory``
+Execute the command: ``drush csv2sql --dir=/PATH/TO/directory``
 
 The directory scanning function (``scan_directory($dir, $files)``) uses a global variable called ``csv2sql_files_path`` to store the csv files paths in an array and add on it in every sub-directory.
