@@ -50,8 +50,8 @@ function drush_csv2sql($csv_path = '') {
   $files = $csv_path ? array($csv_path) : array();
   // Check if the command has a directory path to scan.
   if ($dir = drush_get_option('dir')) {
-    $files = scan_directory($dir, $files);
-    variable_set('csv_files', array());
+    $files = scan_directory($dir);
+    variable_set('csv2sql_files_path', array());
   }
 
   if (!file_exists($csv_path) && empty($files)) {
@@ -94,7 +94,7 @@ function drush_csv2sql($csv_path = '') {
 /**
  * Create a DB.
  *
- * @param $table_name
+ * @param string $table_name
  *   The table name.
  * @param array $header
  *   Array with the column names and definition that was extracted from the CSV.
@@ -199,9 +199,9 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 /**
  * Insert a single row to the table.
  *
- * @param $table_name
+ * @param string $table_name
  *   The table name.
- * @param $row
+ * @param array $row
  *   The row to insert.
  *
  * @return bool
@@ -219,7 +219,7 @@ function csv2sql_insert_row_to_table($table_name, $row) {
  * In order to prevent having MYSQL reserved words, we prefix all the columns
  * with an underscore.
  *
- * @param $col_name
+ * @param string $col_name
  *   The column name.
  *
  * @return string
@@ -244,29 +244,27 @@ function csv2sql_get_column_name($col_name) {
 }
 
 /**
+ * Scan a directory for csv files.
+ *
  * Scans the directory given by the user in the command,
- * Scans the sub-directories as well,
+ * Scans the sub-directories of that directory,
  * Searches for files with 'csv' extension to be added to the convert process.
  *
- * @param $dir
+ * @param string $dir
  *  The path of the directory provided in the command.
- *
- * @param $files
- *  An array containing a name of file if the user added
- *  a file path in addition to the directory path.
  *
  * @return array
  *  An array of 'csv' files found in the directory.
  */
-function scan_directory($dir, $files) {
+function scan_directory($dir) {
   // If the directory does not exist, print a message, stop the function
   // and return the file path we got from the command line (If there's any).
   if (!file_exists($dir)) {
     drush_print('Given directory does not exist.');
-    return $files;
+    return FALSE;
   }
   // Save the array of files in a global variable.
-  $csv_files = variable_get('csv_files') ? variable_get('csv_files') : $files;
+  $csv_files = variable_get('csv2sql_files_path') ? variable_get('csv2sql_files_path') : array();
   // Add a trailing slash and a * so the glob returns everything in the directory,
   // Trim trailing slash and add them here, To make sure we never have '//'.
   $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
@@ -275,7 +273,7 @@ function scan_directory($dir, $files) {
     // If current item is a 'csv' file, Add to the global variable.
     if (pathinfo($item, PATHINFO_EXTENSION) == 'csv') {
       $csv_files[] = $item;
-      variable_set('csv_files', $csv_files);
+      variable_set('csv2sql_files_path', $csv_files);
     }
     // If current item is a directory, Scan again.
     if (is_dir($item)) {
@@ -283,7 +281,7 @@ function scan_directory($dir, $files) {
     }
   }
 
-  return variable_get('csv_files');
+  return variable_get('csv2sql_files_path');
 }
 
 
