@@ -51,7 +51,6 @@ function drush_csv2sql($csv_path = '') {
   // Check if the command has a directory path to scan.
   if ($dir = drush_get_option('dir')) {
     $files = scan_directory($dir);
-    variable_set('csv2sql_files_path', array());
   }
 
   if (!file_exists($csv_path) && empty($files)) {
@@ -257,14 +256,12 @@ function csv2sql_get_column_name($col_name) {
  *  An array of 'csv' files found in the directory.
  */
 function scan_directory($dir) {
-  // If the directory does not exist, print a message, stop the function
-  // and return the file path we got from the command line (If there's any).
+  $csv_files = array();
+  // If the directory does not exist, print a message, stop the function.
   if (!file_exists($dir)) {
     drush_print('Given directory does not exist.');
     return FALSE;
   }
-  // Save the array of files in a global variable.
-  $csv_files = variable_get('csv2sql_files_path') ? variable_get('csv2sql_files_path') : array();
   // Add a trailing slash and a * so the glob returns everything in the directory,
   // Trim trailing slash and add them here, To make sure we never have '//'.
   $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
@@ -273,15 +270,14 @@ function scan_directory($dir) {
     // If current item is a 'csv' file, Add to the global variable.
     if (pathinfo($item, PATHINFO_EXTENSION) == 'csv') {
       $csv_files[] = $item;
-      variable_set('csv2sql_files_path', $csv_files);
     }
     // If current item is a directory, Scan again.
     if (is_dir($item)) {
-      scan_directory($item, $csv_files);
+      $csv_files = array_merge($csv_files, scan_directory($item));
     }
   }
 
-  return variable_get('csv2sql_files_path');
+  return $csv_files;
 }
 
 
