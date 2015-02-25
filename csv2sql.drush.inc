@@ -50,7 +50,7 @@ function drush_csv2sql($csv_path = '') {
   $files = $csv_path ? array($csv_path) : array();
   // Check if the command has a directory path to scan.
   if ($dir = drush_get_option('dir')) {
-    $files = scan_directory($dir);
+    $files = csv2sql_scan_for_csv_files($dir);
   }
 
   if (!file_exists($csv_path) && empty($files)) {
@@ -246,16 +246,16 @@ function csv2sql_get_column_name($col_name) {
  * Scan a directory for csv files.
  *
  * Scans the directory given by the user in the command,
- * Scans the sub-directories of that directory,
- * Searches for files with 'csv' extension to be added to the convert process.
+ * Scans all the sub-directories of that directory,
+ * Searches for files with 'csv' extension to be added to the convert to SQL process.
  *
  * @param string $dir
- *  The path of the directory provided in the command.
+ *    The path of the directory provided in the command.
  *
  * @return array
- *  An array of 'csv' files found in the directory.
+ *    An array of 'csv' files found in the directory.
  */
-function scan_directory($dir) {
+function csv2sql_scan_for_csv_files($dir) {
   $csv_files = array();
   // If the directory does not exist, print a message, stop the function.
   if (!file_exists($dir)) {
@@ -273,7 +273,7 @@ function scan_directory($dir) {
     }
     // If current item is a directory, Scan again.
     if (is_dir($item)) {
-      $csv_files = array_merge($csv_files, scan_directory($item));
+      $csv_files = array_merge($csv_files, csv2sql_scan_for_csv_files($item));
     }
   }
 
