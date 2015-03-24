@@ -39,6 +39,6 @@ In order to deploy a local copy to a remote server you may need to export the SQ
 # Export SQL tables into a file.
 drush sqlq "SHOW TABLES LIKE '_raw_%';" | awk -v ORS=, '{ print $1 }' | sed 's/,$//' | sed 's/^Tables_in_[^,]*,//' | drush sql-dump > raws.sql
 
-# Replace teh drush alias with your own.
+# Replace the drush alias with your own.
 `drush @remote-alias sql-connect` < raws.sql
 ```
