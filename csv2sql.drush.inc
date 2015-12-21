@@ -198,12 +198,13 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
  */
 function csv2sql_insert_row_to_table($table_name, $row) {
   try {
-    db_insert($table_name)
+    return db_insert($table_name)
       ->fields($row)
       ->execute();
   }
   catch (Exception $exception) {
     drush_log(format_string('Error in row #@row: @message', array('@row' => $row['_id'], '@message' => $exception->getMessage())), 'error');
+    return FALSE;
   }
 }
 
