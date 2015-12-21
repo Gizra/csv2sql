@@ -185,7 +185,6 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
   return array_values($headers);
 }
 
-
 /**
  * Insert a single row to the table.
  *
@@ -198,9 +197,14 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
  *   TRUE if the insert operation was successful.
  */
 function csv2sql_insert_row_to_table($table_name, $row) {
-  return db_insert($table_name)
-    ->fields($row)
-    ->execute();
+  try {
+    db_insert($table_name)
+      ->fields($row)
+      ->execute();
+  }
+  catch (Exception $exception) {
+    drush_log(format_string('Error in row #@row: @message', array('@row' => $row['_id'], '@message' => $exception->getMessage())), 'error');
+  }
 }
 
 /**
