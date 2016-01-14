@@ -7,7 +7,7 @@ to the site. However, for the migration itself, SQL would be quicker.
 
 Install the drush command by running ``drush dl csv2sql``.
 
-Execute the command: ``drush scr csv2sql.php /PATH/TO/file.csv``
+Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 
 Will create a ``_raw_file`` table in the Drupal installation which drush is running
 under.
