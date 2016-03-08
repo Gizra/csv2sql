@@ -105,9 +105,10 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
   );
 
   $first_col = TRUE;
+  $index_columns = array();
 
   // The default index for each table.
-  $index_columns = array('__id');
+  $primary = array('__id');
 
   // Get the column properties.
   foreach ($header as $col) {
@@ -117,7 +118,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
     // Add the first column to index.
     if ($first_col && !in_array('index:false', array_map('strtolower', $header_info))) {
-      $index_columns[] = $col_name;
+      $index_columns[$col_name] = array($col_name);
     }
 
     // Allow passing complex headers,
@@ -140,7 +141,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
           // Add to index only if index is set to TRUE and it's not the first column.
           if (strtoupper($value) == 'TRUE' && !$first_col) {
             // Add the column to the table index.
-            $index_columns[] = $col_name;
+            $index_columns[$col_name] = array($col_name);
           }
         }
         else {
@@ -172,7 +173,8 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   $table_schema = array(
     'fields' => $fields_info,
-    'primary key' => $index_columns,
+    'primary key' => $primary,
+    'indexes' => $index_columns,
   );
 
   db_create_table($table_name, $table_schema);
