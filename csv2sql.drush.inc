@@ -72,7 +72,7 @@ function drush_csv2sql($csv_path) {
       $row = array();
       foreach ($data as $delta => $value) {
         $header_col = $headers[$delta];
-        $row[$header_col] = $value;
+        $row[$header_col] = str_replace('\"', '"', $value);
       }
       csv2sql_insert_row_to_table($table_name, $row);
       $row_number++;
