@@ -59,11 +59,7 @@ function drush_csv2sql($csv_path) {
   $path_info = pathinfo($csv_path);
   $table_name = $prefix . '_' . $path_info['filename'];
 
-  $string = 'Starting to convert file "@file" to table "@table".';
-  $args =  array('@file' => $path_info['filename'], '@table' => $table_name);
-  $markup = new FormattableMarkup($string, $args);
-
-  drush_print($markup->__toString());
+  drush_print(sprintf('Starting to convert file %s to table %s.', $path_info['filename'], $table_name));
 
   if (($handle = fopen($csv_path, 'r')) !== FALSE) {
     $row_number = 0;
@@ -217,11 +213,7 @@ function csv2sql_insert_row_to_table($table_name, $row) {
       ->execute();
   }
   catch (Exception $exception) {
-    $string = 'Error in row #@row: @message';
-    $args = array('@row' => $row['_id'], '@message' => $exception->getMessage());
-    $markup = new FormattableMarkup($string, $args);
-
-    drush_log($markup->__toString(), 'error');
+    drush_log(sprintf('Error in row #%d: %s', $row['__id'], $exception->getMessage()), 'error');
     return FALSE;
   }
 }
