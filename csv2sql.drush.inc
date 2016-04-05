@@ -4,6 +4,8 @@
  * @file
  * Convert CSV to SQL and import to the Drupal instance.
  */
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Database\Database;
 
 
 /**
@@ -34,6 +36,9 @@ function csv2sql_drush_command() {
  * Implements drush_hook_command().
  *
  * Command callback for csv2sql.
+ *
+ * @param string $csv_path
+ *   Path to the CSV file.
  */
 function drush_csv2sql($csv_path) {
   $prefix = drush_get_option('prefix', '_raw');
@@ -54,7 +59,7 @@ function drush_csv2sql($csv_path) {
   $path_info = pathinfo($csv_path);
   $table_name = $prefix . '_' . $path_info['filename'];
 
-  drush_print(format_string('Starting to convert file "@file" to table "@table".', array('@file' => $path_info['filename'], '@table' => $table_name)));
+  drush_print(sprintf('Starting to convert file %s to table %s.', $path_info['filename'], $table_name));
 
   if (($handle = fopen($csv_path, 'r')) !== FALSE) {
     $row_number = 0;
@@ -166,9 +171,11 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
     $first_col = FALSE;
   }
 
+  $schema = Database::getConnection()->schema();
+
   if ($drop_existing) {
     // Drop existing table.
-    db_drop_table($table_name);
+    $schema->dropTable($table_name);
   }
 
   $table_schema = array(
@@ -177,7 +184,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
     'indexes' => $index_columns,
   );
 
-  db_create_table($table_name, $table_schema);
+  $schema->createTable($table_name, $table_schema);
 
   $headers = array_keys($fields_info);
 
@@ -200,12 +207,13 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
  */
 function csv2sql_insert_row_to_table($table_name, $row) {
   try {
-    return db_insert($table_name)
+    return Database::getConnection()
+      ->insert($table_name)
       ->fields($row)
       ->execute();
   }
   catch (Exception $exception) {
-    drush_log(format_string('Error in row #@row: @message', array('@row' => $row['_id'], '@message' => $exception->getMessage())), 'error');
+    drush_log(sprintf('Error in row #%d: %s', $row['__id'], $exception->getMessage()), 'error');
     return FALSE;
   }
 }
@@ -223,17 +231,6 @@ function csv2sql_insert_row_to_table($table_name, $row) {
  *   The trimmed, lower-cased and underscored name of the column.
  */
 function csv2sql_get_column_name($col_name) {
-  if (module_exists('ctools')) {
-    // Use CTools.
-    ctools_include('cleanstring');
-    $settings = array(
-      'separator' => '_',
-      'max length' => 255,
-      'lower case' => TRUE,
-    );
-    return '_' . ctools_cleanstring($col_name, $settings);
-  }
-
   $pattern = '/[^a-zA-Z0-9\/]+/';
   $col_name = preg_replace($pattern, '_', $col_name);
 
