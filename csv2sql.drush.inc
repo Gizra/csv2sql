@@ -76,11 +76,9 @@ function drush_csv2sql($csv_path = '') {
           continue;
         }
 
-        // Insert rows.
-        $row = array();
         foreach ($data as $delta => $value) {
           $header_col = $headers[$delta];
-          $row[$header_col] = $value;
+          $row[$header_col] = str_replace('\"', '"', $value);
         }
         csv2sql_insert_row_to_table($table_name, $row);
         $row_number++;
@@ -114,9 +112,10 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
   );
 
   $first_col = TRUE;
+  $index_columns = array();
 
   // The default index for each table.
-  $index_columns = array('__id');
+  $primary = array('__id');
 
   // Get the column properties.
   foreach ($header as $col) {
@@ -126,7 +125,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
     // Add the first column to index.
     if ($first_col && !in_array('index:false', array_map('strtolower', $header_info))) {
-      $index_columns[] = $col_name;
+      $index_columns[$col_name] = array($col_name);
     }
 
     // Allow passing complex headers,
@@ -149,7 +148,7 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
           // Add to index only if index is set to TRUE and it's not the first column.
           if (strtoupper($value) == 'TRUE' && !$first_col) {
             // Add the column to the table index.
-            $index_columns[] = $col_name;
+            $index_columns[$col_name] = array($col_name);
           }
         }
         else {
@@ -181,7 +180,8 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   $table_schema = array(
     'fields' => $fields_info,
-    'primary key' => $index_columns,
+    'primary key' => $primary,
+    'indexes' => $index_columns,
   );
 
   db_create_table($table_name, $table_schema);
@@ -193,7 +193,6 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 
   return array_values($headers);
 }
-
 
 /**
  * Insert a single row to the table.
@@ -207,9 +206,15 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
  *   TRUE if the insert operation was successful.
  */
 function csv2sql_insert_row_to_table($table_name, $row) {
-  return db_insert($table_name)
-    ->fields($row)
-    ->execute();
+  try {
+    return db_insert($table_name)
+      ->fields($row)
+      ->execute();
+  }
+  catch (Exception $exception) {
+    drush_log(format_string('Error in row #@row: @message', array('@row' => $row['_id'], '@message' => $exception->getMessage())), 'error');
+    return FALSE;
+  }
 }
 
 /**

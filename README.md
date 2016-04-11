@@ -7,7 +7,7 @@ to the site. However, for the migration itself, SQL would be quicker.
 
 Install the drush command by running ``drush dl csv2sql``.
 
-Execute the command: ``drush scr csv2sql.php /PATH/TO/file.csv``
+Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 
 Will create a ``_raw_file`` table in the Drupal installation which drush is running
 under.
@@ -39,7 +39,7 @@ In order to deploy a local copy to a remote server you may need to export the SQ
 # Export SQL tables into a file.
 drush sqlq "SHOW TABLES LIKE '_raw_%';" | awk -v ORS=, '{ print $1 }' | sed 's/,$//' | sed 's/^Tables_in_[^,]*,//' | drush sql-dump > raws.sql
 
-# Replace teh drush alias with your own.
+# Replace the drush alias with your own.
 `drush @remote-alias sql-connect` < raws.sql
 ```
 
