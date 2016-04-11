@@ -76,6 +76,7 @@ function drush_csv2sql($csv_path = '') {
           continue;
         }
 
+        $row = array();
         foreach ($data as $delta => $value) {
           $header_col = $headers[$delta];
           $row[$header_col] = str_replace('\"', '"', $value);
