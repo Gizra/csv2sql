@@ -16,15 +16,15 @@ function csv2sql_drush_command() {
     'description' => 'Convert CSV to SQL and import to the Drupal instance.',
     'examples' => array(
       'drush csv2sql /path/to/someFile.csv' => 'Converts the someFile.csv to an SQL table.',
+      'drush csv2sql /path/to/dirWithCsvFiles/' => 'Converts all csv files inside dirWithCsvFiles to an SQL tables.',
     ),
     'arguments' => array(
       'path' => 'The path to the CSV file.',
     ),
-    'required-arguments' => FALSE,
+    'required-arguments' => TRUE,
     'options' => array(
       'prefix' => 'the prefix of the table. Defaults to "_raw".',
       'limit' => 'the number of rows to convert into the SQL table. Defaults to unlimited.',
-      'dir' => 'the directory to scan for csv files.',
     ),
   );
 
@@ -36,7 +36,7 @@ function csv2sql_drush_command() {
  *
  * Command callback for csv2sql.
  */
-function drush_csv2sql($csv_path = '') {
+function drush_csv2sql($csv_path) {
   $prefix = drush_get_option('prefix', '_raw');
 
   $limit = intval(drush_get_option('limit', FALSE));
@@ -46,15 +46,18 @@ function drush_csv2sql($csv_path = '') {
     return;
   }
 
-  // Check if the command has a file direct path.
-  $files = $csv_path ? array($csv_path) : array();
-  // Check if the command has a directory path to scan.
-  if ($dir = drush_get_option('dir')) {
-    $files = csv2sql_scan_for_csv_files($dir);
+  $files = array();
+  // If the path given is a directory then scan the directory for CSV files
+  // otherwise check if it's a file and add it as the only file.
+  if (is_dir($csv_path)) {
+    $files = csv2sql_scan_for_csv_files($csv_path);
+  }
+  elseif (file_exists($csv_path)) {
+    $files[] = $csv_path;
   }
 
-  if (!file_exists($csv_path) && empty($files)) {
-    drush_print('Given file does not exist.');
+  if (empty($files)) {
+    drush_print('Please provide either a path to your CSV file or to a directory containing CSV files".');
     return;
   }
 
