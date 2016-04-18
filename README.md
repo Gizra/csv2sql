@@ -9,6 +9,11 @@ Install the drush command by running ``drush dl csv2sql``.
 
 Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 
+## Scan a directory.
+
+You have the option to scan a whole directory instead of giving an exact path to a ``csv`` file.
+Execute the command: ``drush csv2sql /PATH/TO/directory/``
+
 Will create a ``_raw_file`` table in the Drupal installation which drush is running
 under.
 
