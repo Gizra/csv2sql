@@ -50,39 +50,50 @@ function drush_csv2sql($csv_path) {
     return;
   }
 
-  if (!file_exists($csv_path)) {
-    drush_print('Given file does not exist.');
+  $files = array();
+  // If the path given is a directory then scan the directory for CSV files
+  // otherwise check if it's a file and add it as the only file.
+  if (is_dir($csv_path)) {
+    $files = csv2sql_scan_for_csv_files($csv_path);
+  }
+  elseif (file_exists($csv_path)) {
+    $files[] = $csv_path;
+  }
+
+  if (empty($files)) {
+    drush_print('Please provide either a path to your CSV file or to a directory containing CSV files".');
     return;
   }
 
-
-  $path_info = pathinfo($csv_path);
-  $table_name = $prefix . '_' . $path_info['filename'];
+  foreach ($files as $csv_file) {
+    $path_info = pathinfo($csv_file);
+    $table_name = $prefix . '_' . $path_info['filename'];
 
   drush_print(sprintf('Starting to convert file %s to table %s.', $path_info['filename'], $table_name));
 
-  if (($handle = fopen($csv_path, 'r')) !== FALSE) {
-    $row_number = 0;
-    $first_row = TRUE;
-    while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
-      if ($first_row) {
-        $first_row = FALSE;
+    if (($handle = fopen($csv_file, 'r')) !== FALSE) {
+      $row_number = 0;
+      $first_row = TRUE;
+      while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
+        if ($first_row) {
+          $first_row = FALSE;
 
-        // Create the table.
-        $headers = csv2sql_create_db($table_name, $data);
-        continue;
-      }
+          // Create the table.
+          $headers = csv2sql_create_db($table_name, $data);
+          continue;
+        }
 
-      // Insert rows.
-      $row = array();
-      foreach ($data as $delta => $value) {
-        $header_col = $headers[$delta];
-        $row[$header_col] = str_replace('\"', '"', $value);
+        // Insert rows.
+        $row = array();
+        foreach ($data as $delta => $value) {
+          $header_col = $headers[$delta];
+          $row[$header_col] = str_replace('\"', '"', $value);
+        }
+        csv2sql_insert_row_to_table($table_name, $row);
+        $row_number++;
       }
-      csv2sql_insert_row_to_table($table_name, $row);
-      $row_number++;
+      fclose($handle);
     }
-    fclose($handle);
   }
 }
 
@@ -235,6 +246,44 @@ function csv2sql_get_column_name($col_name) {
   $col_name = preg_replace($pattern, '_', $col_name);
 
   return '_' . trim(strtolower(str_replace(array('-', ' ', '/'), '_', $col_name)));
+}
+
+/**
+ * Scan a directory for csv files.
+ *
+ * Scans the directory given by the user in the command,
+ * Scans all the sub-directories of that directory,
+ * Searches for files with 'csv' extension to be added to the convert to SQL process.
+ *
+ * @param $dir
+ *  The path of the directory provided in the command.
+ *
+ * @return array
+ *  An array of 'csv' files found in the directory.
+ */
+function csv2sql_scan_for_csv_files($dir) {
+  $csv_files = array();
+  // If the directory does not exist, print a message, stop the function.
+  if (!file_exists($dir)) {
+    drush_print('Given directory does not exist.');
+    return FALSE;
+  }
+  // Add a trailing slash and a * so the glob returns everything in the directory,
+  // Trim trailing slash and add them here, To make sure we never have '//'.
+  $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
+
+  foreach ($items_in_dir as $item) {
+    // If current item is a 'csv' file, add it to the list of files.
+    if (pathinfo($item, PATHINFO_EXTENSION) == 'csv') {
+      $csv_files[] = $item;
+    }
+    // If current item is a directory, scan again.
+    if (is_dir($item)) {
+      $csv_files = array_merge($csv_files, csv2sql_scan_for_csv_files($item));
+    }
+  }
+
+  return $csv_files;
 }
 
 
