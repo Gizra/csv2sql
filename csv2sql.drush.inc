@@ -17,6 +17,7 @@ function csv2sql_drush_command() {
     'examples' => array(
       'drush csv2sql /path/to/someFile.csv' => 'Converts the someFile.csv to an SQL table.',
       'drush csv2sql /path/to/dirWithCsvFiles/' => 'Converts all csv files inside dirWithCsvFiles to an SQL tables.',
+      'drush csv2sql someFile.csv --delimiter=\';\' --enclosure=\'"\'' => 'Converts the someFile.csv to an SQL table with semicolon as a delimiter.',
     ),
     'arguments' => array(
       'path' => 'The path to the CSV file.',
@@ -25,6 +26,8 @@ function csv2sql_drush_command() {
     'options' => array(
       'prefix' => 'the prefix of the table. Defaults to "_raw".',
       'limit' => 'the number of rows to convert into the SQL table. Defaults to unlimited.',
+      'delimiter' => 'the field delimiter character (one character only). Defaults to comma(\',\').',
+      'enclosure' => 'the text enclosure character (one character only). Defaults to double quotes(\'"\').',
     ),
   );
 
@@ -38,6 +41,8 @@ function csv2sql_drush_command() {
  */
 function drush_csv2sql($csv_path) {
   $prefix = drush_get_option('prefix', '_raw');
+  $delimiter = drush_get_option('delimiter', ',');
+  $enclosure = drush_get_option('enclosure', '"');
 
   $limit = intval(drush_get_option('limit', FALSE));
 
@@ -70,7 +75,7 @@ function drush_csv2sql($csv_path) {
     if (($handle = fopen($csv_file, 'r')) !== FALSE) {
       $row_number = 0;
       $first_row = TRUE;
-      while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
+      while ((($data = fgetcsv($handle, 0, $delimiter, $enclosure)) !== FALSE) && (!$limit || $limit > $row_number)) {
         if ($first_row) {
           $first_row = FALSE;
 
