@@ -96,14 +96,14 @@ function drush_csv2sql($csv_path) {
  * Create a DB.
  *
  * @param string $table_name
- *  The table name.
+ *   The table name.
  * @param array $header
- *  Array with the column names and definition that was extracted from the CSV.
+ *   Array with the column names and definition that was extracted from the CSV.
  * @param bool $drop_existing
- *  Determines if an existing table should be dropped. Defaults to TRUE.
+ *   Determines if an existing table should be dropped. Defaults to TRUE.
  *
  * @return array
- *  Array with the column names.
+ *   Array with the column names.
  */
 function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE) {
   // Add a serial key as the first column.
@@ -147,9 +147,11 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
       foreach ($properties as $property) {
         list($key, $value) = explode(':', $property);
         // Check which columns needs to be added to index.
-        // Index can't go into the field properties (It's added to table's properties).
+        // Index can't go into the field properties
+        // (It's added to table's properties).
         if (strtolower($key) == 'index') {
-          // Add to index only if index is set to TRUE and it's not the first column.
+          // Add to index only if index is set to TRUE and it's not the
+          // first column.
           if (strtoupper($value) == 'TRUE' && !$first_col) {
             // Add the column to the table index.
             $index_columns[$col_name] = array($col_name);
@@ -160,7 +162,6 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
         }
       }
     }
-
 
     if (empty($col_info)) {
       // Add default values.
@@ -202,12 +203,12 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
  * Insert a single row to the table.
  *
  * @param string $table_name
- *  The table name.
+ *   The table name.
  * @param array $row
- *  The row to insert.
+ *   The row to insert.
  *
  * @return bool
- *  TRUE if the insert operation was successful.
+ *   TRUE if the insert operation was successful.
  */
 function csv2sql_insert_row_to_table($table_name, $row) {
   try {
@@ -228,10 +229,10 @@ function csv2sql_insert_row_to_table($table_name, $row) {
  * with an underscore.
  *
  * @param string $col_name
- *  The column name.
+ *   The column name.
  *
  * @return string
- *  The trimmed, lower-cased and underscored name of the column.
+ *   The trimmed, lower-cased and underscored name of the column.
  */
 function csv2sql_get_column_name($col_name) {
   if (module_exists('ctools')) {
@@ -256,13 +257,14 @@ function csv2sql_get_column_name($col_name) {
  *
  * Scans the directory given by the user in the command,
  * Scans all the sub-directories of that directory,
- * Searches for files with 'csv' extension to be added to the convert to SQL process.
+ * Searches for files with 'csv' extension to be added to the convert to SQL
+ * process.
  *
  * @param string $dir
- *  The path of the directory provided in the command.
+ *   The path of the directory provided in the command.
  *
  * @return array
- *  An array of 'csv' files found in the directory.
+ *   An array of 'csv' files found in the directory.
  */
 function csv2sql_scan_for_csv_files($dir) {
   $csv_files = array();
@@ -271,8 +273,9 @@ function csv2sql_scan_for_csv_files($dir) {
     drush_print('Given directory does not exist.');
     return FALSE;
   }
-  // Add a trailing slash and a * so the glob returns everything in the directory,
-  // Trim trailing slash and add them here, To make sure we never have '//'.
+  // Add a trailing slash and a * so the glob returns everything in the
+  // directory, trim trailing slash and add them here, To make sure we
+  // never have '//'.
   $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
 
   foreach ($items_in_dir as $item) {
@@ -288,5 +291,3 @@ function csv2sql_scan_for_csv_files($dir) {
 
   return $csv_files;
 }
-
-
