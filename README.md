@@ -7,6 +7,8 @@ to the site. However, for the migration itself, SQL would be quicker.
 
 Install the drush command by running ``drush dl csv2sql``.
 
+## Convert a single file.
+
 Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 
 ## Scan a directory.
@@ -14,8 +16,12 @@ Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 You have the option to scan a whole directory instead of giving an exact path to a ``csv`` file.
 Execute the command: ``drush csv2sql /PATH/TO/directory/``
 
-Will create a ``_raw_file`` table in the Drupal installation which drush is running
+## Result.
+
+Converting will create a ``_raw_[file-name]`` table in the Drupal installation which drush is running
 under.
+
+## File structure instructions.
 
 * Each column is created as ``varchar 255`` by default. However it is possible to
 override it by setting the header in the CSV file.
