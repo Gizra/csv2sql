@@ -18,6 +18,10 @@ function csv2sql_drush_command() {
     'description' => 'Convert CSV to SQL and import to the Drupal instance.',
     'examples' => array(
       'drush csv2sql /path/to/someFile.csv' => 'Converts the someFile.csv to an SQL table.',
+      'drush csv2sql /path/to/dirWithCsvFiles/' => 'Converts all csv files inside dirWithCsvFiles to an SQL tables.',
+      'drush csv2sql someFile.csv --delimiter=";"' => 'Converts the someFile.csv to an SQL table with semicolon as a delimiter.',
+      'drush csv2sql someFile.csv --enclosure="\'"' => 'Converts the someFile.csv to an SQL table with a single quote as a enclosure.',
+      'drush csv2sql someFile.csv --escape="/"' => 'Converts the someFile.csv to an SQL table with a forward slash as an escape character.',
     ),
     'arguments' => array(
       'path' => 'The path to the CSV file.',
@@ -26,6 +30,9 @@ function csv2sql_drush_command() {
     'options' => array(
       'prefix' => 'the prefix of the table. Defaults to "_raw".',
       'limit' => 'the number of rows to convert into the SQL table. Defaults to unlimited.',
+      'delimiter' => 'the field delimiter character (one character only). Defaults to comma(",").',
+      'enclosure' => 'the text enclosure character (one character only). Defaults to double quotes(\'"\').',
+      'escape' => 'the text escape character (one character only). Defaults to back slash("\").',
     ),
   );
 
@@ -42,6 +49,9 @@ function csv2sql_drush_command() {
  */
 function drush_csv2sql($csv_path) {
   $prefix = drush_get_option('prefix', '_raw');
+  $delimiter = drush_get_option('delimiter', ',');
+  $enclosure = drush_get_option('enclosure', '"');
+  $escape = drush_get_option('escape', '\\');
 
   $limit = intval(drush_get_option('limit', FALSE));
 
@@ -74,7 +84,7 @@ function drush_csv2sql($csv_path) {
     if (($handle = fopen($csv_file, 'r')) !== FALSE) {
       $row_number = 0;
       $first_row = TRUE;
-      while ((($data = fgetcsv($handle, 0, ',')) !== FALSE) && (!$limit || $limit > $row_number)) {
+      while ((($data = fgetcsv($handle, 0, $delimiter, $enclosure, $escape)) !== FALSE) && (!$limit || $limit > $row_number)) {
         if ($first_row) {
           $first_row = FALSE;
 
@@ -87,7 +97,7 @@ function drush_csv2sql($csv_path) {
         $row = array();
         foreach ($data as $delta => $value) {
           $header_col = $headers[$delta];
-          $row[$header_col] = str_replace('\"', '"', $value);
+          $row[$header_col] = $value;
         }
         csv2sql_insert_row_to_table($table_name, $row);
         $row_number++;
