@@ -4,9 +4,9 @@
  * @file
  * Convert CSV to SQL and import to the Drupal instance.
  */
+
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Database\Database;
-
 
 /**
  * Implements hook_drush_command().
@@ -79,7 +79,7 @@ function drush_csv2sql($csv_path) {
     $path_info = pathinfo($csv_file);
     $table_name = $prefix . '_' . $path_info['filename'];
 
-  drush_print(sprintf('Starting to convert file %s to table %s.', $path_info['filename'], $table_name));
+    drush_print(sprintf('Starting to convert file %s to table %s.', $path_info['filename'], $table_name));
 
     if (($handle = fopen($csv_file, 'r')) !== FALSE) {
       $row_number = 0;
@@ -110,7 +110,7 @@ function drush_csv2sql($csv_path) {
 /**
  * Create a DB.
  *
- * @param $table_name
+ * @param string $table_name
  *   The table name.
  * @param array $header
  *   Array with the column names and definition that was extracted from the CSV.
@@ -162,9 +162,11 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
       foreach ($properties as $property) {
         list($key, $value) = explode(':', $property);
         // Check which columns needs to be added to index.
-        // Index can't go into the field properties (It's added to table's properties).
+        // Index can't go into the field properties
+        // (It's added to table's properties).
         if (strtolower($key) == 'index') {
-          // Add to index only if index is set to TRUE and it's not the first column.
+          // Add to index only if index is set to TRUE and it's not the
+          // first column.
           if (strtoupper($value) == 'TRUE' && !$first_col) {
             // Add the column to the table index.
             $index_columns[$col_name] = array($col_name);
@@ -175,7 +177,6 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
         }
       }
     }
-
 
     if (empty($col_info)) {
       // Add default values.
@@ -218,9 +219,9 @@ function csv2sql_create_db($table_name, $header = array(), $drop_existing = TRUE
 /**
  * Insert a single row to the table.
  *
- * @param $table_name
+ * @param string $table_name
  *   The table name.
- * @param $row
+ * @param array $row
  *   The row to insert.
  *
  * @return bool
@@ -245,7 +246,7 @@ function csv2sql_insert_row_to_table($table_name, $row) {
  * In order to prevent having MYSQL reserved words, we prefix all the columns
  * with an underscore.
  *
- * @param $col_name
+ * @param string $col_name
  *   The column name.
  *
  * @return string
@@ -262,14 +263,14 @@ function csv2sql_get_column_name($col_name) {
  * Scan a directory for csv files.
  *
  * Scans the directory given by the user in the command,
- * Scans all the sub-directories of that directory,
- * Searches for files with 'csv' extension to be added to the convert to SQL process.
+ * Scans all the sub-directories of that directory, searches for files with
+ * 'csv' extension to be added to the convert to SQL process.
  *
- * @param $dir
- *  The path of the directory provided in the command.
+ * @param string $dir
+ *   The path of the directory provided in the command.
  *
  * @return array
- *  An array of 'csv' files found in the directory.
+ *   An array of 'csv' files found in the directory.
  */
 function csv2sql_scan_for_csv_files($dir) {
   $csv_files = array();
@@ -278,8 +279,9 @@ function csv2sql_scan_for_csv_files($dir) {
     drush_print('Given directory does not exist.');
     return FALSE;
   }
-  // Add a trailing slash and a * so the glob returns everything in the directory,
-  // Trim trailing slash and add them here, To make sure we never have '//'.
+  // Add a trailing slash and a * so the glob returns everything in the
+  // directory, trim trailing slash and add them here, To make sure we
+  // never have '//'.
   $items_in_dir = glob(rtrim($dir, '/') . DIRECTORY_SEPARATOR . '*');
 
   foreach ($items_in_dir as $item) {
@@ -295,5 +297,3 @@ function csv2sql_scan_for_csv_files($dir) {
 
   return $csv_files;
 }
-
-
