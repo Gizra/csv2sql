@@ -52,7 +52,7 @@ The values that can be passed in the header are the ones that are expected by
 
 ## Dump SQL and import.
 
-In order to deploy a local copy to a remote server you may need to export the SQL tables, and later import them. Here's a handy bash command to do it - it exports all the tables prefixed with ``_raw_`` into the ``raws.sql`` file. The second comamnd simply imports that SQL file to the remote server.
+In order to deploy a local copy to a remote server you may need to export the SQL tables, and later import them. Here's a handy bash command to do it - it exports all the tables prefixed with ``_raw_`` into the ``raws.sql`` file. The second command simply imports that SQL file to the remote server.
 
 ```bash
 # Export SQL tables into a file.
