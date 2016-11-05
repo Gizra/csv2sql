@@ -42,6 +42,14 @@ The complex column will be translated in the DB to an ``amount`` column type
 The values that can be passed in the header are the ones that are expected by
 ``db_create_table()``
 
+## File structure options.
+
+* `--prefix`: The prefix of the table. Defaults to "_raw".
+* `--limit`: The number of rows to convert into the SQL table. Defaults to unlimited.
+* `--delimiter`: The field delimiter character (one character only). Defaults to comma(,).
+* `--enclosure`: The text enclosure character (one character only). Defaults to double quotes(").
+* `--escape`: The text escape character (one character only). Defaults to back slash(\).
+
 ## Dump SQL and import.
 
 In order to deploy a local copy to a remote server you may need to export the SQL tables, and later import them. Here's a handy bash command to do it - it exports all the tables prefixed with ``_raw_`` into the ``raws.sql`` file. The second comamnd simply imports that SQL file to the remote server.
