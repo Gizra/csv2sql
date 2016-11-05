@@ -7,6 +7,8 @@ to the site. However, for the migration itself, SQL would be quicker.
 
 Install the drush command by running ``drush dl csv2sql``.
 
+## Convert a single file.
+
 Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 
 ## Scan a directory.
@@ -14,8 +16,20 @@ Execute the command: ``drush csv2sql /PATH/TO/file.csv``
 You have the option to scan a whole directory instead of giving an exact path to a ``csv`` file.
 Execute the command: ``drush csv2sql /PATH/TO/directory/``
 
-Will create a ``_raw_file`` table in the Drupal installation which drush is running
+## File structure options.
+
+* `--prefix`: The prefix of the table. Defaults to "_raw".
+* `--limit`: The number of rows to convert into the SQL table. Defaults to unlimited.
+* `--delimiter`: The field delimiter character (one character only). Defaults to comma(,).
+* `--enclosure`: The text enclosure character (one character only). Defaults to double quotes(").
+* `--escape`: The text escape character (one character only). Defaults to back slash(\\).
+
+## Result.
+
+Converting will create a ``_raw_[file-name]`` table in the Drupal installation which drush is running
 under.
+
+## File structure instructions.
 
 * Each column is created as ``varchar 255`` by default. However it is possible to
 override it by setting the header in the CSV file.
@@ -36,9 +50,9 @@ The complex column will be translated in the DB to an ``amount`` column type
 The values that can be passed in the header are the ones that are expected by
 ``db_create_table()``
 
-## Dump SQL and import
+## Dump SQL and import.
 
-In order to deploy a local copy to a remote server you may need to export the SQL tables, and later import them. Here's a handy bash command to do it - it exports all the tables prefixed with ``_raw_`` into the ``raws.sql`` file. The second comamnd simply imports that SQL file to the remote server.
+In order to deploy a local copy to a remote server you may need to export the SQL tables, and later import them. Here's a handy bash command to do it - it exports all the tables prefixed with ``_raw_`` into the ``raws.sql`` file. The second command simply imports that SQL file to the remote server.
 
 ```bash
 # Export SQL tables into a file.
